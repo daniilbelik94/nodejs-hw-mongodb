@@ -1,7 +1,9 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import 'dotenv/config';
 
 async function initMongoConnection() {
-  const uri = 'mongodb+srv://dbelik664:rTOWrXxtb0PiUqIP@cluster0.g69v9.mongodb.net/contacts_db?retryWrites=true&w=majority';
+  const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } = process.env;
+  const uri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
 
   try {
     await mongoose.connect(uri);
@@ -12,4 +14,4 @@ async function initMongoConnection() {
   }
 }
 
-module.exports = initMongoConnection;
+export default initMongoConnection;

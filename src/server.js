@@ -1,13 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const pino = require('pino-http')();
-const { getAllContacts, getContactById } = require('./services/contacts');
+import express from 'express';
+import cors from 'cors';
+import pino from 'pino-http';
+import { getAllContacts, getContactById } from './services/contacts.js';
 
 function setupServer() {
   const app = express();
 
   app.use(cors());
-  app.use(pino);
+  app.use(pino());
 
   app.get('/contacts', async (req, res) => {
     try {
@@ -49,4 +49,4 @@ function setupServer() {
   });
 }
 
-module.exports = setupServer;
+export default setupServer;
