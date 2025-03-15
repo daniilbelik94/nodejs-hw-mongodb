@@ -3,9 +3,10 @@ import path from 'path';
 import setupServer from './server.js';
 import initMongoConnection from './db/initMongoConnection.js';
 
-// Визначаємо абсолютний шлях до .env
-const envPath = path.resolve(process.cwd(), '.env');
-dotenv.config({ path: envPath });
+if (process.env.NODE_ENV !== 'production') {
+  const envPath = path.resolve(process.cwd(), '.env');
+  dotenv.config({ path: envPath });
+}
 
 async function start() {
   console.log('Loading environment variables...');
