@@ -16,7 +16,6 @@ function setupServer() {
   app.use(express.json());
   console.log('express.json middleware applied');
 
-  // Додаємо middleware для перевірки Content-Type
   app.use((req, res, next) => {
     if (['POST', 'PATCH'].includes(req.method) && req.headers['content-type'] !== 'application/json') {
       return next(createHttpError(400, 'Content-Type must be application/json'));
@@ -28,8 +27,8 @@ function setupServer() {
   app.use(pino());
   console.log('Pino logger middleware applied');
 
-  console.log('Setting up /contacts route...');
-  app.use('/contacts', contactsRouter);
+  console.log('Setting up /api/contacts route...');
+  app.use('/api/contacts', contactsRouter); // Изменил префикс на /api/contacts
 
   console.log('Setting up notFoundHandler...');
   app.use(notFoundHandler);
