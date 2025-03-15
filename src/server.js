@@ -27,6 +27,17 @@ function setupServer() {
   app.use(pino());
   console.log('Pino logger middleware applied');
 
+  // убираю ошибку 404 на рендере
+  app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: 'Welcome to the Contacts API!',
+    endpoints: {
+      contacts: '/api/contacts'
+    }
+  });
+});
+
   console.log('Setting up /api/contacts route...');
   app.use('/api/contacts', contactsRouter); // Изменил префикс на /api/contacts
 
