@@ -15,17 +15,17 @@ function setupServer() {
 
   app.use(express.json());
   console.log('express.json middleware applied');
-
   app.use((req, res, next) => {
+    console.log('Content-Type:', req.headers['content-type']);
     if (['POST', 'PATCH'].includes(req.method)) {
-      const contentType = req.headers['content-type']?.toLowerCase().trim();
-      if (!contentType || !contentType.includes('application/json')) {
-        return next(createHttpError(400, 'Content-Type must be application/json'));
-      }
+    const contentType = req.headers['content-type']?.toLowerCase().trim();
+    if (!contentType || !contentType.includes('application/json')) {
+      return next(createHttpError(400, 'Content-Type must be application/json'));
     }
-    next();
-  });
-  console.log('Content-Type check middleware applied');
+  }
+  next();
+});
+console.log('Content-Type check middleware applied');
 
   app.use(pino());
   console.log('Pino logger middleware applied');
