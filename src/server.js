@@ -39,7 +39,7 @@ function setupServer() {
 });
 
   console.log('Setting up /api/contacts route...');
-  app.use('/api/contacts', contactsRouter); // Изменил префикс на /api/contacts
+  app.use('/contacts', contactsRouter); // Было: '/api/contacts'
 
   console.log('Setting up notFoundHandler...');
   app.use(notFoundHandler);
