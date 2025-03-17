@@ -17,8 +17,11 @@ function setupServer() {
   console.log('express.json middleware applied');
 
   app.use((req, res, next) => {
-    if (['POST', 'PATCH'].includes(req.method) && req.headers['content-type'] !== 'application/json') {
-      return next(createHttpError(400, 'Content-Type must be application/json'));
+    if (['POST', 'PATCH'].includes(req.method)) {
+      const contentType = req.headers['content-type']?.toLowerCase().trim();
+      if (!contentType || !contentType.includes('application/json')) {
+        return next(createHttpError(400, 'Content-Type must be application/json'));
+      }
     }
     next();
   });
@@ -27,19 +30,8 @@ function setupServer() {
   app.use(pino());
   console.log('Pino logger middleware applied');
 
-  // убираю ошибку 404 на рендере
-  app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 200,
-    message: 'Welcome to the Contacts API!',
-    endpoints: {
-      contacts: '/api/contacts'
-    }
-  });
-});
-
-  console.log('Setting up /api/contacts route...');
-  app.use('/contacts', contactsRouter); // Было: '/api/contacts'
+  console.log('Setting up /contacts route...');
+  app.use('/contacts', contactsRouter);
 
   console.log('Setting up notFoundHandler...');
   app.use(notFoundHandler);
