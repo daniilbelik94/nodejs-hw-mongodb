@@ -1,6 +1,8 @@
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
 import { createSession, findUserByEmail } from '../services/auth.js';
+import User from '../models/user.js';
+import Session from '../models/session.js';
 
 export const register = async (req, res, next) => {
   try {
