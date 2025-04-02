@@ -137,6 +137,42 @@ export const deleteContact = async (req, res) => {
   }
 };
 
+export const getContacts = async (req, res, next) => {
+  try {
+    const { page = 1, perPage = 10 } = req.query;
+    const skip = (page - 1) * perPage;
+
+    const userId = req.user._id;
+
+    const [contacts, totalItems] = await Promise.all([
+      Contact.find({ userId })
+        .skip(skip)
+        .limit(perPage),
+      Contact.countDocuments({ userId }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / perPage);
+    const hasPreviousPage = page > 1;
+    const hasNextPage = page < totalPages;
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully found contacts!',
+      data: {
+        data: contacts,
+        page: parseInt(page),
+        perPage: parseInt(perPage),
+        totalItems,
+        totalPages,
+        hasPreviousPage,
+        hasNextPage,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Middleware to authenticate user
 // Add authenticate middleware to all routes
 router.get('/', authenticate, listContacts);
