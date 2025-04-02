@@ -16,11 +16,15 @@ async function start() {
   console.log('MONGODB_URL:', process.env.MONGODB_URL);
   console.log('MONGODB_DB:', process.env.MONGODB_DB);
 
-  if (!process.env.PORT || !process.env.MONGODB_USER || !process.env.MONGODB_PASSWORD || !process.env.MONGODB_URL || !process.env.MONGODB_DB) {
+  if (!process.env.PORT ||
+
+ !process.env.MONGODB_USER || !process.env.MONGODB_PASSWORD || !process.env.MONGODB_URL || !process.env.MONGODB_DB) {
     throw new Error('Missing required environment variables');
   }
 
+  console.log('Initializing MongoDB connection...');
   await initMongoConnection();
+  console.log('MongoDB connection established, setting up server...');
   setupServer();
 }
 

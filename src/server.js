@@ -5,15 +5,25 @@ import contactsRouter from './routers/contacts.js';
 import errorHandler from './middlewares/errorHandler.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import createHttpError from 'http-errors';
+import cookieParser from 'cookie-parser';
+import authRouter from './routers/auth.js';
+
+
+// Inside setupServer function, after app.use(express.json()):
+
 
 function setupServer() {
   const app = express();
+
+  
 
   console.log('Setting up middleware...');
   app.use(cors());
   console.log('CORS middleware applied');
 
   app.use(express.json());
+  app.use(cookieParser());
+  console.log('Cookie parser middleware applied');
   console.log('express.json middleware applied');
 
   app.use((req, res, next) => {
@@ -41,6 +51,10 @@ function setupServer() {
   console.log('Setting up /api/contacts route...');
   app.use('/api/contacts', contactsRouter); // Изменил префикс на /api/contacts
 
+  // After app.use('/contacts', contactsRouter);
+  app.use('/auth', authRouter);
+  console.log('Setting up /auth route...');
+
   console.log('Setting up notFoundHandler...');
   app.use(notFoundHandler);
 
@@ -54,3 +68,4 @@ function setupServer() {
 }
 
 export default setupServer;
+

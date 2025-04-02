@@ -12,8 +12,9 @@ const contactSchema = new mongoose.Schema(
       required: true,
       default: 'personal',
     },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const Contact = mongoose.model('Contact', contactSchema);
