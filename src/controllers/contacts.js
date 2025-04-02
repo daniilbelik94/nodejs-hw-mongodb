@@ -46,7 +46,6 @@ export const listContacts = async (req, res) => {
 };
 
 export const getContactById = async (req, res) => {
-  try {
     const contact = await Contact.findById(req.params.contactId);
     if (!contact) {
       throw createHttpError(404, 'Contact not found');
@@ -55,39 +54,19 @@ export const getContactById = async (req, res) => {
       status: 200,
       message: 'Successfully found contact!',
       data: contact,
-    });
-  } catch (error) {
-    if (error.status) {
-      res.status(error.status).json({
-        status: error.status,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Server error',
-        error: error.message,
-      });
-    }
+    })
   }
-};
+  
 
 export const createContact = async (req, res) => {
-  try {
+
     const contact = await Contact.create(req.body);
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
       data: contact,
     });
-  } catch (error) {
-    res.status(500).json({
-      status: 500,
-      message: 'Server error',
-      error: error.message,
-    });
   }
-};
 
 export const deleteContact = async (req, res) => {
   try {
