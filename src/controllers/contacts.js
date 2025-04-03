@@ -68,26 +68,18 @@ export const createContact = async (req, res) => {
     });
   }
 
-export const deleteContact = async (req, res) => {
+export const deleteContact = async (req, res, next) => {
   try {
-    const contact = await Contact.findByIdAndDelete(req.params.contactId);
-    if (!contact) {
-      throw createHttpError(404, 'Contact not found');
+    const { id } = req.params;
+    const deletedContact = await Contact.findByIdAndDelete(id);
+
+    if (!deletedContact) {
+      return res.status(404).json({ message: 'Contact not found' });
     }
-    res.status(204).send();
+
+    res.status(204).send(); 
   } catch (error) {
-    if (error.status) {
-      res.status(error.status).json({
-        status: error.status,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Server error',
-        error: error.message,
-      });
-    }
+    next(error);
   }
 };
 
