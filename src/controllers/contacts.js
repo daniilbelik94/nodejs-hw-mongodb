@@ -13,34 +13,22 @@ export const listContacts = async (req, res, next) => {
     const pageNumber = parseInt(page);
     const perPageNumber = parseInt(perPage);
 
-    const filter = { userId: req.user._id };
+    const userId = req.user._id;
+    const filter = { userId };
     if (type) filter.contactType = type;
     if (isFavourite !== undefined) filter.isFavourite = isFavourite === 'true';
 
-    const totalItems = await Contact.countDocuments(filter);
-    const totalPages = Math.ceil(totalItems / perPageNumber);
-    const skip = (pageNumber - 1) * perPageNumber;
-
-    const sortCriteria = {};
-    sortCriteria[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
-    const contacts = await Contact.find(filter)
-      .sort(sortCriteria)
-      .skip(skip)
-      .limit(perPageNumber);
+    const contacts = await getAllContactsService(userId, filter, {
+      page: pageNumber,
+      perPage: perPageNumber,
+      sortBy,
+      sortOrder,
+    });
 
     res.status(200).json({
       status: 200,
       message: 'Successfully found contacts!',
-      data: {
-        data: contacts,
-        page: pageNumber,
-        perPage: perPageNumber,
-        totalItems,
-        totalPages,
-        hasPreviousPage: pageNumber > 1,
-        hasNextPage: pageNumber < totalPages,
-      },
+      data: contacts,
     });
   } catch (error) {
     next(error);
