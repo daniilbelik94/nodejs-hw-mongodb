@@ -1,5 +1,5 @@
 import express from 'express';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import ctrlWrapper from '../utils/ctrlWrapper.js'; 
 import { register, login, refresh, logout } from '../controllers/auth.js';
 import validateBody from '../middlewares/validateBody.js';
 import { registerSchema, loginSchema } from '../schemas/authSchema.js';

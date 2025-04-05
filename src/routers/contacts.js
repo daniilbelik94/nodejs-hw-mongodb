@@ -1,8 +1,8 @@
 import express from 'express';
+import ctrlWrapper from '../utils/ctrlWrapper.js'; // Убираем фигурные скобки
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
 import authenticate from '../middlewares/authenticate.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { contactSchema, updateContactSchema } from '../schemas/contactSchema.js';
 import {
   listContacts,
