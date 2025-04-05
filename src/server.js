@@ -8,14 +8,8 @@ import createHttpError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import authRouter from './routers/auth.js';
 
-
-// Inside setupServer function, after app.use(express.json()):
-
-
 function setupServer() {
   const app = express();
-
-  
 
   console.log('Setting up middleware...');
   app.use(cors());
@@ -39,19 +33,18 @@ function setupServer() {
 
   // убираю ошибку 404 на рендере
   app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 200,
-    message: 'Welcome to the Contacts API!',
-    endpoints: {
-      contacts: '/api/contacts'
-    }
+    res.status(200).json({
+      status: 200,
+      message: 'Welcome to the Contacts API!',
+      endpoints: {
+        contacts: '/contacts', // путь в документации
+      },
+    });
   });
-});
 
-  console.log('Setting up /api/contacts route...');
-  app.use('/api/contacts', contactsRouter); // Изменил префикс на /api/contacts
+  console.log('Setting up /contacts route...');
+  app.use('/contacts', contactsRouter); // Убрал /api
 
-  // After app.use('/contacts', contactsRouter);
   app.use('/auth', authRouter);
   console.log('Setting up /auth route...');
 
@@ -68,4 +61,3 @@ function setupServer() {
 }
 
 export default setupServer;
-

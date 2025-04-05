@@ -1,42 +1,13 @@
 import createHttpError from 'http-errors';
-import { getAllContacts as getAllContactsService, getContactById as getContactByIdService, createContact as createContactService, updateContact as updateContactService, deleteContact as deleteContactService } from '../services/contacts.js';
-import authenticate from '../middlewares/authenticate.js';
+import {
+  getAllContacts as getAllContactsService,
+  getContactById as getContactByIdService,
+  createContact as createContactService,
+  updateContact as updateContactService,
+  deleteContact as deleteContactService,
+} from '../services/contacts.js';
 
-
-async function getAllContacts(req, res) {
-  const contacts = await getAllContactsService();
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully found contacts!',
-    data: contacts,
-  });
-}
-
-export const getContactById = async (req, res) => {
-  const contact = await Contact.findOne({ _id: req.params.contactId, userId: req.user._id });
-  if (!contact) {
-    throw createHttpError(404, 'Contact not found');
-  }
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully found contact!',
-    data: contact,
-  });
-};
-
-export const createContact = async (req, res) => {
-  const contact = await Contact.create({
-    ...req.body,
-    userId: req.user._id,
-  });
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
-    data: contact,
-  });
-};
-
-export const listContacts = async (req, res) => {
+export const listContacts = async (req, res, next) => {
   try {
     const { page = 1, perPage = 10, sortBy = 'name', sortOrder = 'asc', type, isFavourite } = req.query;
     const pageNumber = parseInt(page);
@@ -65,28 +36,54 @@ export const listContacts = async (req, res) => {
         data: contacts,
         page: pageNumber,
         perPage: perPageNumber,
-        Contact: totalItems,
+        totalItems,
         totalPages,
         hasPreviousPage: pageNumber > 1,
         hasNextPage: pageNumber < totalPages,
       },
     });
   } catch (error) {
-    res.status(500).json({
-      status: 500,
-      message: 'Server error',
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-export const updateContact = async (req, res) => {
+export const getContactById = async (req, res, next) => {
   try {
-    const contact = await Contact.findOneAndUpdate(
-      { _id: req.params.contactId, userId: req.user._id },
-      req.body,
-      { new: true }
-    );
+    const { contactId } = req.params;
+    const userId = req.user._id;
+    const contact = await getContactByIdService(contactId, userId);
+    if (!contact) {
+      throw createHttpError(404, 'Contact not found');
+    }
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully found contact!',
+      data: contact,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createContact = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const contact = await createContactService(req.body, userId);
+    res.status(201).json({
+      status: 201,
+      message: 'Successfully created a contact!',
+      data: contact,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateContact = async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const userId = req.user._id;
+    const contact = await updateContactService(contactId, req.body, userId);
     if (!contact) {
       throw createHttpError(404, 'Contact not found');
     }
@@ -96,89 +93,20 @@ export const updateContact = async (req, res) => {
       data: contact,
     });
   } catch (error) {
-    if (error.status) {
-      res.status(error.status).json({
-        status: error.status,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Server error',
-        error: error.message,
-      });
-    }
+    next(error);
   }
 };
 
-export const deleteContact = async (req, res) => {
+export const deleteContact = async (req, res, next) => {
   try {
-    const contact = await Contact.findOneAndDelete({
-      _id: req.params.contactId,
-      userId: req.user._id,
-    });
+    const { contactId } = req.params;
+    const userId = req.user._id;
+    const contact = await deleteContactService(contactId, userId);
     if (!contact) {
       throw createHttpError(404, 'Contact not found');
     }
     res.status(204).send();
   } catch (error) {
-    if (error.status) {
-      res.status(error.status).json({
-        status: error.status,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Server error',
-        error: error.message,
-      });
-    }
-  }
-};
-
-export const getContacts = async (req, res, next) => {
-  try {
-    const { page = 1, perPage = 10 } = req.query;
-    const skip = (page - 1) * perPage;
-
-    const userId = req.user._id;
-
-    const [contacts, totalItems] = await Promise.all([
-      Contact.find({ userId })
-        .skip(skip)
-        .limit(perPage),
-      Contact.countDocuments({ userId }),
-    ]);
-
-    const totalPages = Math.ceil(totalItems / perPage);
-    const hasPreviousPage = page > 1;
-    const hasNextPage = page < totalPages;
-
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: {
-        data: contacts,
-        page: parseInt(page),
-        perPage: parseInt(perPage),
-        totalItems,
-        totalPages,
-        hasPreviousPage,
-        hasNextPage,
-      },
-    });
-  } catch (error) {
     next(error);
   }
 };
-
-// Middleware to authenticate user
-// Add authenticate middleware to all routes
-router.get('/', authenticate, listContacts);
-router.get('/:contactId', authenticate, isValidId, getContactById);
-router.post('/', authenticate, validateBody(contactSchema), createContact);
-router.delete('/:contactId', authenticate, isValidId, deleteContact);
-router.patch('/:contactId', authenticate, isValidId, validateBody(updateContactSchema), updateContact);
-
-export { getAllContacts, getContactById, createContact, updateContact, deleteContact };
