@@ -86,8 +86,14 @@ export const refresh = async (req, res, next) => {
 
     // Find session
     const session = await Session.findOne({ refreshToken });
-    if (!session || session.refreshTokenValidUntil < new Date()) {
-      throw createHttpError(401, 'Refresh token is invalid or expired');
+    if (!session) {
+      throw createHttpError(401, 'Session not found');
+    }
+
+    // Check if refresh token is expired
+    if (session.refreshTokenValidUntil < new Date()) {
+      await Session.deleteOne({ refreshToken }); // Удаляем истекшую сессию
+      throw createHttpError(401, 'Refresh token expired');
     }
 
     // Create new session
@@ -119,8 +125,11 @@ export const logout = async (req, res, next) => {
       throw createHttpError(401, 'Refresh token not provided');
     }
 
-    // Delete session
-    await Session.deleteOne({ refreshToken });
+    // Find and delete session
+    const session = await Session.findOneAndDelete({ refreshToken });
+    if (!session) {
+      throw createHttpError(401, 'Session not found');
+    }
 
     // Clear cookie
     res.clearCookie('refreshToken');
