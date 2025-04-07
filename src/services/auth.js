@@ -15,14 +15,19 @@ export const createSession = async (userId) => {
   const refreshTokenValidUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
   // Delete any existing session
-  await Session.deleteOne({ userId });
+  console.log('Deleting existing session for userId:', userId);
+  const deleteResult = await Session.deleteOne({ userId });
+  console.log('Delete result:', deleteResult);
 
   // Create new session
-  return await Session.create({
+  const session = await Session.create({
     userId,
     accessToken,
     refreshToken,
     accessTokenValidUntil,
     refreshTokenValidUntil,
   });
+  console.log('New session created:', session);
+
+  return session;
 };

@@ -1,5 +1,5 @@
 import express from 'express';
-import ctrlWrapper from '../utils/ctrlWrapper.js'; 
+import ctrlWrapper from '../utils/ctrlWrapper.js';
 import { register, login, refresh, logout } from '../controllers/auth.js';
 import validateBody from '../middlewares/validateBody.js';
 import { registerSchema, loginSchema } from '../schemas/authSchema.js';
@@ -14,7 +14,7 @@ router.post('/register', validateBody(registerSchema), ctrlWrapper(register));
 router.post('/login', validateBody(loginSchema), ctrlWrapper(login));
 
 // POST /auth/refresh
-router.post('/refresh', authenticate, ctrlWrapper(refresh));
+router.post('/refresh', ctrlWrapper(refresh)); // Убираем authenticate
 
 // POST /auth/logout
 router.post('/logout', authenticate, ctrlWrapper(logout));

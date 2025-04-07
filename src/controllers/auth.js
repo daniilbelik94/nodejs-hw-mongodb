@@ -80,19 +80,21 @@ export const login = async (req, res, next) => {
 export const refresh = async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies;
+    console.log('Refresh token received:', refreshToken);
     if (!refreshToken) {
       throw createHttpError(401, 'Refresh token not provided');
     }
 
     // Find session
     const session = await Session.findOne({ refreshToken });
+    console.log('Session found:', session);
     if (!session) {
       throw createHttpError(401, 'Session not found');
     }
 
     // Check if refresh token is expired
     if (session.refreshTokenValidUntil < new Date()) {
-      await Session.deleteOne({ refreshToken }); // Удаляем истекшую сессию
+      await Session.deleteOne({ refreshToken });
       throw createHttpError(401, 'Refresh token expired');
     }
 
@@ -114,6 +116,7 @@ export const refresh = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Refresh error:', error.message);
     next(error);
   }
 };
@@ -121,12 +124,14 @@ export const refresh = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies;
+    console.log('Refresh token received for logout:', refreshToken);
     if (!refreshToken) {
       throw createHttpError(401, 'Refresh token not provided');
     }
 
     // Find and delete session
     const session = await Session.findOneAndDelete({ refreshToken });
+    console.log('Session deleted:', session);
     if (!session) {
       throw createHttpError(401, 'Session not found');
     }
@@ -136,6 +141,7 @@ export const logout = async (req, res, next) => {
 
     res.status(204).send();
   } catch (error) {
+    console.error('Logout error:', error.message);
     next(error);
   }
 };
