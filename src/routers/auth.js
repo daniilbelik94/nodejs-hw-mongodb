@@ -14,9 +14,9 @@ router.post('/register', validateBody(registerSchema), ctrlWrapper(register));
 router.post('/login', validateBody(loginSchema), ctrlWrapper(login));
 
 // POST /auth/refresh
-router.post('/refresh', ctrlWrapper(refresh)); // Убираем authenticate
+router.post('/refresh', ctrlWrapper(refresh));
 
 // POST /auth/logout
-router.post('/logout', authenticate, ctrlWrapper(logout));
+router.post('/logout', ctrlWrapper(logout));
 
 export default router;

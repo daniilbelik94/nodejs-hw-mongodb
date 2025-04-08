@@ -20,8 +20,14 @@ function setupServer() {
   console.log('Cookie parser middleware applied');
   console.log('express.json middleware applied');
 
+  // Проверяем Content-Type только если тело запроса присутствует
   app.use((req, res, next) => {
-    if (['POST', 'PATCH'].includes(req.method) && req.headers['content-type'] !== 'application/json') {
+    if (
+      ['POST', 'PATCH'].includes(req.method) &&
+      req.headers['content-type'] && 
+      req.headers['content-type'] !== 'application/json' &&
+      Object.keys(req.body).length > 0 
+    ) {
       return next(createHttpError(400, 'Content-Type must be application/json'));
     }
     next();
@@ -31,19 +37,19 @@ function setupServer() {
   app.use(pino());
   console.log('Pino logger middleware applied');
 
-  // убираю ошибку 404 на рендере
+  // Убираем ошибку 404 на рендере
   app.get('/', (req, res) => {
     res.status(200).json({
       status: 200,
       message: 'Welcome to the Contacts API!',
       endpoints: {
-        contacts: '/contacts', // путь в документации
+        contacts: '/contacts',
       },
     });
   });
 
   console.log('Setting up /contacts route...');
-  app.use('/contacts', contactsRouter); // Убрал /api
+  app.use('/contacts', contactsRouter);
 
   app.use('/auth', authRouter);
   console.log('Setting up /auth route...');
