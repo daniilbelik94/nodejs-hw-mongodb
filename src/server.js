@@ -8,6 +8,7 @@ import createHttpError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import authRouter from './routers/auth.js';
 import multer from 'multer';
+import net from 'net';
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -62,12 +63,7 @@ function setupServer() {
   console.log('Setting up errorHandler...');
   app.use(errorHandler);
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+  return app; // Возвращаем приложение Express вместо запуска сервера
 }
-
-setupServer(); 
 
 export default setupServer;
