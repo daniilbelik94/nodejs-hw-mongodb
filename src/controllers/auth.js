@@ -1,6 +1,6 @@
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
-import { createSession, findUserByEmail, generateResetToken } from '../services/auth.js';
+import { createSession, findUserByEmail, generateResetToken, verifyResetToken, updateUserPassword } from '../services/auth.js';
 import User from '../models/user.js';
 import Session from '../models/session.js';
 import { sendEmail } from '../utils/sendEmail.js';
@@ -36,6 +36,7 @@ export const register = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Register error:', error.message); // Добавляем логирование
     next(error);
   }
 };
@@ -74,6 +75,7 @@ export const login = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Login error:', error.message); // Добавляем логирование
     next(error);
   }
 };
@@ -157,6 +159,11 @@ export const sendResetEmail = async (req, res, next) => {
       throw createHttpError(404, 'User not found!');
     }
 
+    // Check if APP_DOMAIN is defined
+    if (!process.env.APP_DOMAIN) {
+      throw createHttpError(500, 'APP_DOMAIN is not defined in environment variables');
+    }
+
     // Generate reset token
     const resetToken = generateResetToken(email);
 
@@ -179,6 +186,7 @@ export const sendResetEmail = async (req, res, next) => {
       data: {},
     });
   } catch (error) {
+    console.error('Send reset email error:', error.message); // Добавляем логирование
     next(error);
   }
 };
@@ -208,6 +216,7 @@ export const resetPassword = async (req, res, next) => {
       data: {},
     });
   } catch (error) {
+    console.error('Reset password error:', error.message); // Добавляем логирование
     next(error);
   }
 };

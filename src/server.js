@@ -7,9 +7,9 @@ import notFoundHandler from './middlewares/notFoundHandler.js';
 import createHttpError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import authRouter from './routers/auth.js';
-import multer from 'multer'; // Добавляем multer
+import multer from 'multer';
 
-const upload = multer({ dest: 'uploads/' }); // Временная папка для файлов
+const upload = multer({ dest: 'uploads/' });
 
 function setupServer() {
   const app = express();
@@ -23,7 +23,6 @@ function setupServer() {
   console.log('Cookie parser middleware applied');
   console.log('express.json middleware applied');
 
-  // Проверяем Content-Type только если тело запроса присутствует
   app.use((req, res, next) => {
     if (
       ['POST', 'PATCH'].includes(req.method) &&
@@ -41,7 +40,6 @@ function setupServer() {
   app.use(pino());
   console.log('Pino logger middleware applied');
 
-  // Убираем ошибку 404 на рендере
   app.get('/', (req, res) => {
     res.status(200).json({
       status: 200,
@@ -53,7 +51,7 @@ function setupServer() {
   });
 
   console.log('Setting up /contacts route...');
-  app.use('/contacts', upload.single('photo'), contactsRouter); // Добавляем multer для обработки photo
+  app.use('/contacts', upload.single('photo'), contactsRouter);
 
   app.use('/auth', authRouter);
   console.log('Setting up /auth route...');
@@ -69,5 +67,7 @@ function setupServer() {
     console.log(`Server is running on port ${PORT}`);
   });
 }
+
+setupServer(); 
 
 export default setupServer;
