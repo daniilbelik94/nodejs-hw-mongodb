@@ -7,6 +7,9 @@ import notFoundHandler from './middlewares/notFoundHandler.js';
 import createHttpError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import authRouter from './routers/auth.js';
+import multer from 'multer'; // Добавляем multer
+
+const upload = multer({ dest: 'uploads/' }); // Временная папка для файлов
 
 function setupServer() {
   const app = express();
@@ -24,9 +27,10 @@ function setupServer() {
   app.use((req, res, next) => {
     if (
       ['POST', 'PATCH'].includes(req.method) &&
-      req.headers['content-type'] && 
+      req.headers['content-type'] &&
       req.headers['content-type'] !== 'application/json' &&
-      Object.keys(req.body).length > 0 
+      !req.headers['content-type'].startsWith('multipart/form-data') &&
+      Object.keys(req.body).length > 0
     ) {
       return next(createHttpError(400, 'Content-Type must be application/json'));
     }
@@ -49,7 +53,7 @@ function setupServer() {
   });
 
   console.log('Setting up /contacts route...');
-  app.use('/contacts', contactsRouter);
+  app.use('/contacts', upload.single('photo'), contactsRouter); // Добавляем multer для обработки photo
 
   app.use('/auth', authRouter);
   console.log('Setting up /auth route...');

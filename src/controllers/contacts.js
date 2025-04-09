@@ -56,7 +56,7 @@ export const getContactById = async (req, res, next) => {
 export const createContact = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const contact = await createContactService(req.body, userId);
+    const contact = await createContactService(req.body, userId, req.file);
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
@@ -71,7 +71,7 @@ export const updateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const userId = req.user._id;
-    const contact = await updateContactService(contactId, req.body, userId);
+    const contact = await updateContactService(contactId, req.body, userId, req.file);
     if (!contact) {
       throw createHttpError(404, 'Contact not found');
     }
@@ -91,7 +91,7 @@ export const deleteContact = async (req, res, next) => {
     const userId = req.user._id;
     const contact = await deleteContactService(contactId, userId);
     if (!contact) {
-      throw createHttpError(404, 'Contact not found'); 
+      throw createHttpError(404, 'Contact not found');
     }
     res.status(204).send();
   } catch (error) {

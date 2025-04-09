@@ -1,4 +1,5 @@
 import Contact from '../models/contact.js';
+import { uploadImage } from '../utils/cloudinary.js';
 
 async function getAllContacts(userId, filter = {}, options = {}) {
   const { page = 1, perPage = 10, sortBy = 'name', sortOrder = 'asc' } = options;
@@ -34,11 +35,20 @@ async function getContactById(contactId, userId) {
   return await Contact.findOne({ _id: contactId, userId });
 }
 
-async function createContact(contactData, userId) {
-  return await Contact.create({ ...contactData, userId });
+async function createContact(contactData, userId, file) {
+  let photoUrl = null;
+  if (file) {
+    photoUrl = await uploadImage(file);
+  }
+  return await Contact.create({ ...contactData, userId, photo: photoUrl });
 }
 
-async function updateContact(contactId, updateData, userId) {
+async function updateContact(contactId, updateData, userId, file) {
+  let photoUrl = null;
+  if (file) {
+    photoUrl = await uploadImage(file);
+    updateData.photo = photoUrl;
+  }
   return await Contact.findOneAndUpdate(
     { _id: contactId, userId },
     updateData,
