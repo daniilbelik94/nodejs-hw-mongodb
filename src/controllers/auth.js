@@ -1,8 +1,9 @@
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
-import { createSession, findUserByEmail } from '../services/auth.js';
+import { createSession, findUserByEmail, generateResetToken } from '../services/auth.js';
 import User from '../models/user.js';
 import Session from '../models/session.js';
+import { sendEmail } from '../utils/sendEmail.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -142,6 +143,71 @@ export const logout = async (req, res, next) => {
     res.status(204).send();
   } catch (error) {
     console.error('Logout error:', error.message);
+    next(error);
+  }
+};
+
+export const sendResetEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    // Find user
+    const user = await findUserByEmail(email);
+    if (!user) {
+      throw createHttpError(404, 'User not found!');
+    }
+
+    // Generate reset token
+    const resetToken = generateResetToken(email);
+
+    // Generate reset link
+    const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${resetToken}`;
+
+    // Send email
+    const subject = 'Reset Your Password';
+    const html = `
+      <h1>Password Reset Request</h1>
+      <p>You requested to reset your password. Click the link below to reset it:</p>
+      <a href="${resetLink}">Reset Password</a>
+      <p>This link will expire in 5 minutes.</p>
+    `;
+    await sendEmail(email, subject, html);
+
+    res.status(200).json({
+      status: 200,
+      message: 'Reset password email has been successfully sent.',
+      data: {},
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    // Verify token and get email
+    const email = await verifyResetToken(token);
+
+    // Find user
+    const user = await findUserByEmail(email);
+    if (!user) {
+      throw createHttpError(404, 'User not found!');
+    }
+
+    // Update password
+    await updateUserPassword(email, password);
+
+    // Delete user's session
+    await Session.deleteOne({ userId: user._id });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Password has been successfully reset.',
+      data: {},
+    });
+  } catch (error) {
     next(error);
   }
 };

@@ -2,6 +2,8 @@ import User from '../models/user.js';
 import Session from '../models/session.js';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
+import createHttpError from 'http-errors';
 
 export const findUserByEmail = async (email) => {
   return await User.findOne({ email });
@@ -30,4 +32,26 @@ export const createSession = async (userId) => {
   console.log('New session created:', session);
 
   return session;
+};
+
+export const generateResetToken = (email) => {
+  return jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '5m' });
+};
+
+export const verifyResetToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.email;
+  } catch (error) {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+};
+
+export const updateUserPassword = async (email, newPassword) => {
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  return await User.findOneAndUpdate(
+    { email },
+    { password: hashedPassword },
+    { new: true }
+  );
 };
