@@ -1,6 +1,7 @@
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import Session from '../models/session.js'; // Импортируем модель Session
 
 const authenticate = async (req, res, next) => {
   try {
@@ -15,6 +16,12 @@ const authenticate = async (req, res, next) => {
     // Check token expiration
     if (decoded.exp * 1000 < Date.now()) {
       throw createHttpError(401, 'Access token expired');
+    }
+
+    // Find session by accessToken
+    const session = await Session.findOne({ accessToken: token });
+    if (!session) {
+      throw createHttpError(401, 'Session not found');
     }
 
     // Find user

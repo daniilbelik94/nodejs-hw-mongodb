@@ -131,7 +131,7 @@ export const logout = async (req, res, next) => {
 
     // Find and delete session
     const session = await Session.findOneAndDelete({ refreshToken });
-    console.log('Session deleted:', session);
+    console.log('Session deleted during logout:', session);
     if (!session) {
       throw createHttpError(401, 'Session not found');
     }
