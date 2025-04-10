@@ -1,0 +1,75 @@
+patch:
+  tags:
+    - Contacts
+  summary: Update a contact by ID
+  operationId: updateContact
+  description: Updates an existing contact by its ID for the authenticated user. Supports updating the photo.
+  security:
+    - bearerAuth: []
+  parameters:
+    - in: path
+      name: contactId
+      required: true
+      schema:
+        type: string
+      description: The ID of the contact to update
+  requestBody:
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: John Updated
+            phoneNumber:
+              type: string
+              example: +1234567890
+            email:
+              type: string
+              example: john.updated@example.com
+              nullable: true
+            isFavourite:
+              type: boolean
+              example: true
+            contactType:
+              type: string
+              enum: [work, home, personal]
+              example: work
+            photo:
+              type: string
+              format: binary
+              nullable: true
+  responses:
+    '200':
+      description: Successfully updated the contact
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: Successfully updated a contact!
+              data:
+                $ref: ../../components/contact.yaml#/Contact
+    '404':
+      description: Contact not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Contact not found!
+              data:
+                type: object
+                nullable: true
+                example: null

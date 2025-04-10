@@ -8,9 +8,27 @@ import createHttpError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import authRouter from './routers/auth.js';
 import multer from 'multer';
-import net from 'net';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+import path from 'path';
 
 const upload = multer({ dest: 'uploads/' });
+
+// Проверяем существование swagger.json
+const swaggerPath = new URL('../docs/swagger.json', import.meta.url).pathname;
+let swaggerDocument;
+
+try {
+  if (fs.existsSync(swaggerPath)) {
+    swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
+  } else {
+    console.warn('Swagger documentation file (docs/swagger.json) not found. Run "npm run build-docs" to generate it.');
+    swaggerDocument = { openapi: '3.1.0', info: { title: 'API', version: '1.0.0' }, paths: {} }; // Заглушка
+  }
+} catch (error) {
+  console.error('Error loading swagger.json:', error.message);
+  swaggerDocument = { openapi: '3.1.0', info: { title: 'API', version: '1.0.0' }, paths: {} }; // Заглушка
+}
 
 function setupServer() {
   const app = express();
@@ -51,6 +69,9 @@ function setupServer() {
     });
   });
 
+  // Добавляем роут для Swagger UI
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
   console.log('Setting up /contacts route...');
   app.use('/contacts', upload.single('photo'), contactsRouter);
 
@@ -63,7 +84,7 @@ function setupServer() {
   console.log('Setting up errorHandler...');
   app.use(errorHandler);
 
-  return app; // Возвращаем приложение Express вместо запуска сервера
+  return app;
 }
 
 export default setupServer;
