@@ -21,13 +21,13 @@ let swaggerDocument;
 try {
   if (fs.existsSync(swaggerPath)) {
     swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
+    console.log('Swagger documentation loaded successfully from docs/swagger.json');
   } else {
-    console.warn('Swagger documentation file (docs/swagger.json) not found. Run "npm run build-docs" to generate it.');
-    swaggerDocument = { openapi: '3.1.0', info: { title: 'API', version: '1.0.0' }, paths: {} }; // Заглушка
+    throw new Error('Swagger documentation file (docs/swagger.json) not found. Run "npm run build-docs" to generate it.');
   }
 } catch (error) {
   console.error('Error loading swagger.json:', error.message);
-  swaggerDocument = { openapi: '3.1.0', info: { title: 'API', version: '1.0.0' }, paths: {} }; // Заглушка
+  throw new Error('Failed to load Swagger documentation. Ensure docs/swagger.json exists and is valid JSON.');
 }
 
 function setupServer() {
@@ -65,12 +65,15 @@ function setupServer() {
       message: 'Welcome to the Contacts API!',
       endpoints: {
         contacts: '/contacts',
+        auth: '/auth',
+        docs: '/api-docs',
       },
     });
   });
 
   // Добавляем роут для Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  console.log('Swagger UI route set up at /api-docs');
 
   console.log('Setting up /contacts route...');
   app.use('/contacts', upload.single('photo'), contactsRouter);

@@ -6,6 +6,7 @@ import net from 'net';
 
 if (process.env.NODE_ENV !== 'production') {
   const envPath = path.resolve(process.cwd(), '.env');
+  console.log(`Loading .env from ${envPath}`);
   dotenv.config({ path: envPath });
 }
 
@@ -13,7 +14,7 @@ async function start() {
   console.log('Loading environment variables...');
   console.log('PORT:', process.env.PORT);
   console.log('MONGODB_USER:', process.env.MONGODB_USER);
-  console.log('MONGODB_PASSWORD:', process.env.MONGODB_PASSWORD);
+  console.log('MONGODB_PASSWORD:', process.env.MONGODB_PASSWORD ? '[REDACTED]' : undefined);
   console.log('MONGODB_URL:', process.env.MONGODB_URL);
   console.log('MONGODB_DB:', process.env.MONGODB_DB);
 
@@ -40,15 +41,21 @@ async function start() {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${PORT} is already in use. Exiting...`);
       process.exit(1);
+    } else {
+      console.error('Unexpected error while checking port:', err);
+      process.exit(1);
     }
   });
 
   server.once('listening', () => {
     server.close(); // Закрываем тестовый сервер
+    console.log(`Port ${PORT} is free, starting Express server...`);
 
     // Запускаем Express-сервер
     const appServer = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(`API available at http://localhost:${PORT}`);
+      console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
     });
 
     // Обработка завершения процесса

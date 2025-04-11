@@ -1,75 +1,110 @@
-patch:
-  tags:
-    - Contacts
-  summary: Update a contact by ID
-  operationId: updateContact
-  description: Updates an existing contact by its ID for the authenticated user. Supports updating the photo.
-  security:
-    - bearerAuth: []
-  parameters:
-    - in: path
-      name: contactId
-      required: true
+tags:
+  - Contacts
+summary: Update a contact by ID
+operationId: updateContact
+description: Updates an existing contact by its ID for the authenticated user. Supports updating the photo.
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: contactId
+    required: true
+    schema:
+      type: string
+    description: The ID of the contact to update
+requestBody:
+  content:
+    multipart/form-data:
       schema:
-        type: string
-      description: The ID of the contact to update
-  requestBody:
+        type: object
+        properties:
+          name:
+            type: string
+            example: John Updated
+          phoneNumber:
+            type: string
+            example: "+1234567890"
+          email:
+            type: string
+            example: john.updated@example.com
+            nullable: true
+          isFavourite:
+            type: boolean
+            example: true
+          contactType:
+            type: string
+            enum: [work, home, personal]
+            example: work
+          photo:
+            type: string
+            format: binary
+            nullable: true
+responses:
+  '200':
+    description: Successfully updated the contact
     content:
-      multipart/form-data:
+      application/json:
         schema:
           type: object
           properties:
-            name:
+            status:
+              type: integer
+              example: 200
+            message:
               type: string
-              example: John Updated
-            phoneNumber:
+              example: Successfully updated a contact!
+            data:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 1234567890abcdef12345678
+                name:
+                  type: string
+                  example: John Updated
+                phoneNumber:
+                  type: string
+                  example: "+1234567890"
+                email:
+                  type: string
+                  example: john.updated@example.com
+                  nullable: true
+                isFavourite:
+                  type: boolean
+                  example: true
+                contactType:
+                  type: string
+                  enum: [work, home, personal]
+                  example: work
+                userId:
+                  type: string
+                  example: 9876543210fedcba09876543
+                photo:
+                  type: string
+                  example: https://res.cloudinary.com/dtc7bl9mp/image/upload/v1234567890/photo.jpg
+                  nullable: true
+                createdAt:
+                  type: string
+                  format: date-time
+                  example: 2023-10-01T12:00:00Z
+                updatedAt:
+                  type: string
+                  format: date-time
+                  example: 2023-10-01T12:00:00Z
+  '404':
+    description: Contact not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+              example: 404
+            message:
               type: string
-              example: +1234567890
-            email:
-              type: string
-              example: john.updated@example.com
+              example: Contact not found!
+            data:
+              type: object
               nullable: true
-            isFavourite:
-              type: boolean
-              example: true
-            contactType:
-              type: string
-              enum: [work, home, personal]
-              example: work
-            photo:
-              type: string
-              format: binary
-              nullable: true
-  responses:
-    '200':
-      description: Successfully updated the contact
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                example: 200
-              message:
-                type: string
-                example: Successfully updated a contact!
-              data:
-                $ref: ../../components/contact.yaml#/Contact
-    '404':
-      description: Contact not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                example: 404
-              message:
-                type: string
-                example: Contact not found!
-              data:
-                type: object
-                nullable: true
-                example: null
+              example: null
