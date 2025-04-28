@@ -1,47 +1,41 @@
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
-import { getAllContacts, getContactById } from './services/contacts.js';
+import contactsRouter from './routers/contacts.js';
+import errorHandler from './middlewares/errorHandler.js';
+import notFoundHandler from './middlewares/notFoundHandler.js';
+import createHttpError from 'http-errors';
 
 function setupServer() {
   const app = express();
 
+  console.log('Setting up middleware...');
   app.use(cors());
+  console.log('CORS middleware applied');
+
+  app.use(express.json());
+  console.log('express.json middleware applied');
+
+  // Додаємо middleware для перевірки Content-Type
+  app.use((req, res, next) => {
+    if (['POST', 'PATCH'].includes(req.method) && req.headers['content-type'] !== 'application/json') {
+      return next(createHttpError(400, 'Content-Type must be application/json'));
+    }
+    next();
+  });
+  console.log('Content-Type check middleware applied');
+
   app.use(pino());
+  console.log('Pino logger middleware applied');
 
-  app.get('/contacts', async (req, res) => {
-    try {
-      const contacts = await getAllContacts();
-      res.status(200).json({
-        status: 200,
-        message: 'Successfully found contacts!',
-        data: contacts,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
+  console.log('Setting up /contacts route...');
+  app.use('/contacts', contactsRouter);
 
-  app.get('/contacts/:contactId', async (req, res) => {
-    try {
-      const { contactId } = req.params;
-      const contact = await getContactById(contactId);
-      if (!contact) {
-        return res.status(404).json({ message: 'Contact not found' });
-      }
-      res.status(200).json({
-        status: 200,
-        message: `Successfully found contact with id ${contactId}!`,
-        data: contact,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
+  console.log('Setting up notFoundHandler...');
+  app.use(notFoundHandler);
 
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
-  });
+  console.log('Setting up errorHandler...');
+  app.use(errorHandler);
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
